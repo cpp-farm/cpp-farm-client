@@ -1,85 +1,43 @@
-import boto3
-import datetime
+from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
+import logging
 import os
-import serial
 
-logging_rate = 1 # Logging rate in minutes
-data = 0
+ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+KEYS_PATH = os.path.join(ROOT_PATH, 'keys')
+print('ROOT_PATH: %s\nKEYS_PATH: %s' % (ROOT_PATH, KEYS_PATH))
 
-def send_data():
-  index = 0
-  time = ''
-  latitude = ''
-  longitude = ''
-  time = time + data[index]
+CERTIFICATE_PATH = os.path.join(KEYS_PATH, 'dfa63f42f6-certificate.pem.crt')
+PRIVATE_KEY_PATH = os.path.join(KEYS_PATH, 'dfa63f42f6-private.pem.key')
+ROOT_CA_PATH = os.path.join(KEYS_PATH, 'AmazonRootCA1.pem')
 
-  while data[index] != 'T':
-    index = index + 1
-    time = time + data[index]
+ENDPOINT = 'a1twx4zqllhsb2-ats.iot.us-west-2.amazonaws.com'
+THING_ID = 'thing1'
 
-    print('Time:' + time + ',')
-    index = index + 1
+print('CERTIFICATE_PATH: %s\nPRIVATE_KEY_PATH: %s\nROOT_CA_PATH: %s' % (CERTIFICATE_PATH, PRIVATE_KEY_PATH, ROOT_CA_PATH))
+print('ENDPOINT: %s\nTHING_ID: %s' % (ENDPOINT, THING_ID))
 
-    while data[index] != 'N':
-      index = index + 1
-      latitude = latitude + data[index]
+logger = logging.getLogger("AWSIoTPythonSDK.core")
+logger.setLevel(logging.DEBUG)
+streamHandler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+streamHandler.setFormatter(formatter)
+logger.addHandler(streamHandler)
 
-    print('Latitude:' + latitude + ',')
+myMQTTClient = AWSIoTMQTTClient(THING_ID)
+myMQTTClient.configureCredentials(ROOT_CA_PATH, PRIVATE_KEY_PATH, CERTIFICATE_PATH)
+myMQTTClient.configureEndpoint(ENDPOINT, 8883)
 
-    # Skip two characters to remove the comma and space
-    index = index + 2
-    while data[index] != 'W':
-      index = index + 1
-      longitude = longitude + data[index]
-    # client_socket.send('longitude:' + '%s' %longitude + ', temperature:25')
-    print('Longitude:' + longitude + ',')
-    print('Temperature: 25')
+myMQTTClient.configureAutoReconnectBackoffTime(1, 32, 20)
+myMQTTClient.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
+myMQTTClient.configureDrainingFrequency(2)  # Draining: 2 Hz
+myMQTTClient.configureConnectDisconnectTimeout(10)  # 10 sec
+myMQTTClient.configureMQTTOperationTimeout(5)  # 5 sec
 
-# Setup Serial Communication
-ser = serial.Serial('/dev/ttyACM0', 9600)
+myMQTTClient.connect()
 
-current_time = datetime.datetime.now()
-last_minute = current_time.minute
-last_second = current_time.second
+# message = {}
+# message['message'] = "1"
+# message['sequence'] = "2"
+# messageJson = json.dumps(message)
 
-while 1:
-  #Compare current_time minute to last_minute.  If it is a new minute, send the timestamp and temperature
-  current_time = datetime.datetime.now()
-
-  #Read Serial Data
-  data=ser.readline()
-  if((current_time.second != last_second)):
-  #if((current_time.minute != last_minute)):
-    send_data()
-    last_minute = current_time.minute
-    last_second = current_time.second
-
-
-dynamodb = boto3.resource(
-  aws_access_key_id='AKIAIHPDN42GF4NTZUGQ',
-  aws_secret_access_key='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',
-  region_name='us-west-1',
-  service_name='dynamodb'
-)
-
-table = dynamodb.Table('cpp-farm-003')
-
-print(table.creation_date_time)
-
-table.put_item(
-  Item={
-    'id': '3',
-    'lat': 2,
-    'lng': 3,
-    'time': '2019-02-22',
-  }
-)
-
-response = table.get_item(
-  Key={
-    'id': '2'
-  }
-)
-
-item = response['Item']
-print(item)
+# myMQTTClient.publish("power", messageJson, 0)
