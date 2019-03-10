@@ -1,6 +1,8 @@
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
-import logging
 import os
+from log import setupLogging
+
+setupLogging()
 
 ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 KEYS_PATH = os.path.join(ROOT_PATH, 'keys')
@@ -16,22 +18,15 @@ THING_ID = 'thing1'
 print('CERTIFICATE_PATH: %s\nPRIVATE_KEY_PATH: %s\nROOT_CA_PATH: %s' % (CERTIFICATE_PATH, PRIVATE_KEY_PATH, ROOT_CA_PATH))
 print('ENDPOINT: %s\nTHING_ID: %s' % (ENDPOINT, THING_ID))
 
-logger = logging.getLogger("AWSIoTPythonSDK.core")
-logger.setLevel(logging.DEBUG)
-streamHandler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-streamHandler.setFormatter(formatter)
-logger.addHandler(streamHandler)
-
 myMQTTClient = AWSIoTMQTTClient(THING_ID)
 myMQTTClient.configureCredentials(ROOT_CA_PATH, PRIVATE_KEY_PATH, CERTIFICATE_PATH)
 myMQTTClient.configureEndpoint(ENDPOINT, 8883)
 
 myMQTTClient.configureAutoReconnectBackoffTime(1, 32, 20)
-myMQTTClient.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
-myMQTTClient.configureDrainingFrequency(2)  # Draining: 2 Hz
-myMQTTClient.configureConnectDisconnectTimeout(10)  # 10 sec
-myMQTTClient.configureMQTTOperationTimeout(5)  # 5 sec
+myMQTTClient.configureOfflinePublishQueueing(-1)
+myMQTTClient.configureDrainingFrequency(2)
+myMQTTClient.configureConnectDisconnectTimeout(10)
+myMQTTClient.configureMQTTOperationTimeout(5) 
 
 myMQTTClient.connect()
 
