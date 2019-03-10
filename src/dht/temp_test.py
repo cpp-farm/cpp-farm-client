@@ -42,8 +42,10 @@ ser = serial.Serial('/dev/ttyACM0', 9600)
 current_time = datetime.datetime.now()
 last_minute = current_time.minute
 last_second = current_time.second
+loopCount = 0
 
 while 1:
+  print('count: %s' % (loopCount))
   # Compare current_time minute to last_minute.  If it is a new minute, send the timestamp and temperature
   current_time = datetime.datetime.now()
 
@@ -54,7 +56,8 @@ while 1:
   # Read Serial Data
   data = ser.readline()
 
-  if((current_time.second != last_second)):
-    payload = create_payload(str(result.temperature))
-    last_minute = current_time.minute
-    last_second = current_time.second
+  if ((current_time.second != last_second)):
+    print('data in line: %s' % (data))
+    # payload = create_payload(str(result.temperature))
+    # last_minute = current_time.minute
+    # last_second = current_time.second
