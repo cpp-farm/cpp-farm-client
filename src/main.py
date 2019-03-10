@@ -1,6 +1,9 @@
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
+import datetime
+import json
 import os
 from log import setupLogging
+import time
 
 setupLogging()
 
@@ -14,9 +17,10 @@ ROOT_CA_PATH = os.path.join(KEYS_PATH, 'AmazonRootCA1.pem')
 
 ENDPOINT = 'a1twx4zqllhsb2-ats.iot.us-west-2.amazonaws.com'
 THING_ID = 'thing1'
+TOPIC = 'cpp/sensor'
 
 print('CERTIFICATE_PATH: %s\nPRIVATE_KEY_PATH: %s\nROOT_CA_PATH: %s' % (CERTIFICATE_PATH, PRIVATE_KEY_PATH, ROOT_CA_PATH))
-print('ENDPOINT: %s\nTHING_ID: %s' % (ENDPOINT, THING_ID))
+print('ENDPOINT: %s\nTHING_ID: %s\nTOPIC: %s' % (ENDPOINT, THING_ID, TOPIC))
 
 myMQTTClient = AWSIoTMQTTClient(THING_ID)
 myMQTTClient.configureCredentials(ROOT_CA_PATH, PRIVATE_KEY_PATH, CERTIFICATE_PATH)
@@ -29,10 +33,19 @@ myMQTTClient.configureConnectDisconnectTimeout(10)
 myMQTTClient.configureMQTTOperationTimeout(5) 
 
 myMQTTClient.connect()
+time.sleep(2)
+loopCount = 0
 
-# message = {}
-# message['message'] = "1"
-# message['sequence'] = "2"
-# messageJson = json.dumps(message)
+while True:
+  timestamp = int(round(time.time() * 1000))
 
-# myMQTTClient.publish("power", messageJson, 0)
+  message = {}
+  message['row'] = loopCount
+  message['temperature'] = "12"
+  message['timestamp'] = timestamp
+  messageJson = json.dumps(message)
+
+  myMQTTClient.publish(TOPIC, messageJson, 0)
+  print('Published topic %s: %s\n' % (TOPIC, messageJson))
+  loopCount += 1
+  time.sleep(1)
