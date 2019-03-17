@@ -1,4 +1,4 @@
-from serialHelper import getData
+from readData import getData
 import json
 import time
 
@@ -11,18 +11,16 @@ def loop(
   global loopCount
 
   while 1:
+    data = getData()
     timestamp = int(round(time.time() * 1000))
 
     message = {}
     message['row'] = loopCount
-    message['temperature'] = "12"
     message['timestamp'] = timestamp
+    message['data'] = data
     messageJson = json.dumps(message)
 
     myMQTTClient.publish(topic, messageJson, 0)
-
-    data = getData()
-    print('data: %s' % data)
 
     print('Published topic %s: %s\n' % (topic, messageJson))
     loopCount += 1
