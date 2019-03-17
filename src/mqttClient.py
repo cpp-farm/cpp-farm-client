@@ -1,4 +1,5 @@
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
+import time
 
 myMQTTClient = None
 
@@ -25,6 +26,8 @@ def getClient(
     _myMQTTClient.connect()
     myMQTTClient = _myMQTTClient 
 
+    time.sleep(2)
     return myMQTTClient
+
   else:
     return myMQTTClient
