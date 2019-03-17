@@ -1,3 +1,4 @@
+from serialHelper import getData
 import json
 import time
 
@@ -19,6 +20,10 @@ def loop(
     messageJson = json.dumps(message)
 
     myMQTTClient.publish(topic, messageJson, 0)
+
+    data = getData()
+    print('data: %s' % data)
+
     print('Published topic %s: %s\n' % (topic, messageJson))
     loopCount += 1
     time.sleep(1)
