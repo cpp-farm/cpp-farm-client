@@ -1,10 +1,12 @@
 from config import config
-import json
 from mqttClient import getClient 
-from log import setupLogging
+import json
 from loop import loop
+from log import setupLogging
+import sys
 
 print('cpp-farm-client starting...')
+print('command line args: %s' % sys.argv)
 print('config: %s' % json.dumps(config))
 
 setupLogging()

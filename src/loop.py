@@ -1,8 +1,10 @@
-from readData import getData
+from readData import DataReader
 import json
 import time
 
 loopCount = 0
+dataReader = DataReader(serial = False)
+getData = dataReader['getData']
 
 def loop(
   myMQTTClient,
@@ -12,6 +14,7 @@ def loop(
 
   while 1:
     data = getData()
+    print(data)
     timestamp = int(round(time.time() * 1000))
 
     message = {}
